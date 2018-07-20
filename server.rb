@@ -2,7 +2,7 @@ require 'sinatra'
 require 'json'
 require 'octokit'
 
-ACCESS_TOKEN = "b3da46678ffaf4e76a0c804a280d7f62404c96da"
+ACCESS_TOKEN = "" # GitHub OAuth Token
 
 before do
     @client ||= Octokit::Client.new(:access_token => ACCESS_TOKEN)
