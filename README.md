@@ -1,6 +1,6 @@
 Sinatra app using Github web hooks to run bash scripts.
 
-Download and activate (ngrok)[https://ngrok.com]
+Download and activate [ngrok](https://ngrok.com)
 
 Start required containers for nightwatch per the repo readme
 
