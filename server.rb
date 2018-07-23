@@ -2,6 +2,7 @@ require 'sinatra'
 require 'json'
 require 'octokit'
 require 'dotenv/load'
+require 'shell/executer.rb'
 
 ACCESS_TOKEN = ENV['ACCESS_KEY'] # GitHub OAuth Token / load via .env file
 
@@ -37,13 +38,35 @@ def process_pull_request(pull_request)
     puts "Processing pull request..."
     @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending')
 
-    sleep 2 # do work...
+    # Sycamore School Repo
+    # Retreive branch to test
+    puts "Update School and get branch"
+    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchool; git fetch; git pull; git checkout #{@branch}").success?
+
+    #Sycamore School Rails Repo
+    # Update repo to master
+    puts "Update Rails Repo"
+    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; git fetch; git pull; git checkout master").success?
+    # Update Docker Container
+    puts "Update web container"
+    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; docker-compose build web").success?
+
+    # Sycamore School Tests repo
+    # Update repo to master
+    puts "Update Tests Repo"
+    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; git fetch; git pull; git checkout master").success?
+    # Install dependencies
+    puts "Install dependencies"
+    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; npm install").success?    
+    # Start nightwatch tests
+    puts "Fire Nightwatch!"
+    puts @answer = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --retries 5").success?
 
     if @answer
         @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
         puts "Pull request processed!"
     else
         @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
-        puts "Pull requst failed "
+        puts "Pull request failed..."
     end
 end
