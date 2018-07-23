@@ -36,38 +36,46 @@ end
 
 def process_pull_request(pull_request)
     puts "Processing pull request..."
-    @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending')
+    @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'pending', { :description => 'Fighting Wildlings!' })
 
     # Sycamore School Repo
     # Retreive branch to test
     puts "Update School and get branch"
-    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchool; git fetch; git pull; git checkout #{@branch}").success?
+    puts updateSchool = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchool; git fetch; git pull; git checkout #{@branch}").success?
 
     #Sycamore School Rails Repo
     # Update repo to master
     puts "Update Rails Repo"
-    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; git fetch; git pull; git checkout master").success?
+    puts updateRails = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; git fetch; git pull; git checkout master").success?
     # Update Docker Container
     puts "Update web container"
-    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; docker-compose build web").success?
+    puts updateContainer = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; docker-compose build web").success?
 
     # Sycamore School Tests repo
     # Update repo to master
     puts "Update Tests Repo"
-    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; git fetch; git pull; git checkout master").success?
+    puts updateTests = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; git fetch; git pull; git checkout master").success?
     # Install dependencies
     puts "Install dependencies"
-    puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; npm install").success?    
+    puts installDependencies = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; npm install").success?    
     # Start nightwatch tests
-    puts "Fire Nightwatch!"
-    puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --tag login --retries 5").success?
+    
+    if updateSchool && updateRails && updateContainer && updateTests && installDependencies
 
-    if nightwatch
-        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-        puts "Pull request processed!"
+        puts "Fire Nightwatch!"
+        puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --tag loginTests --retries 5").success?
+
+        if nightwatch
+            @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success', { :description => 'Nightwatch tests passed!' })
+            puts "Pull request processed!"
+        else
+            @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure', { :description => 'Nightwatch tests failed somewhere...' })
+            puts "Pull request failed..."
+        end
+
     else
-        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
-        puts "Pull request failed..."
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'error', { :description => 'Something went wrong during build' })
+        puts "Something went wrong during build"
     end
     
 end
