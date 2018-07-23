@@ -1,8 +1,9 @@
 require 'sinatra'
 require 'json'
 require 'octokit'
+require 'dotenv/load'
 
-ACCESS_TOKEN = "" # GitHub OAuth Token
+ACCESS_TOKEN = ENV['ACCESS_KEY'] # GitHub OAuth Token / load via .env file
 
 before do
     @client ||= Octokit::Client.new(:access_token => ACCESS_TOKEN)
