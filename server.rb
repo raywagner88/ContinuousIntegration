@@ -63,7 +63,7 @@ def process_pull_request(pull_request)
     if updateSchool && updateRails && updateContainer && updateTests && installDependencies
 
         puts "Fire Nightwatch!"
-        puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --tag loginTests --retries 5").success?
+        puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --retries 5").success?
 
         if nightwatch
             @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success', { :description => 'Nightwatch tests passed!' })
