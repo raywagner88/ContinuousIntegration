@@ -4,7 +4,7 @@ require 'octokit'
 require 'dotenv/load'
 require 'shell/executer.rb'
 
-ACCESS_TOKEN = ENV['ACCESS_KEY'] # GitHub OAuth Token / load via .env file
+ACCESS_TOKEN = ENV['ACCESS_TOKEN'] # GitHub OAuth Token / load via .env file
 
 before do
     @client ||= Octokit::Client.new(:access_token => ACCESS_TOKEN)
@@ -60,9 +60,9 @@ def process_pull_request(pull_request)
     puts Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; npm install").success?    
     # Start nightwatch tests
     puts "Fire Nightwatch!"
-    puts @answer = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --retries 5").success?
+    puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --tag login --retries 5").success?
 
-    if @answer
+    if nightwatch
         @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
         puts "Pull request processed!"
     else
