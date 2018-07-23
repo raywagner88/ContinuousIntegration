@@ -13,7 +13,6 @@ end
 post '/event_handler' do
 @payload = JSON.parse(params[:payload])
 @branch = @payload["pull_request"]["head"]["ref"]
-@answer = false
 
 case request.env['HTTP_X_GITHUB_EVENT']
     when "pull_request"
