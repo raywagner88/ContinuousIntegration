@@ -11,6 +11,7 @@ end
 post '/event_handler' do
 @payload = JSON.parse(params[:payload])
 @branch = @payload["pull_request"]["head"]["ref"]
+@answer = false
 
 case request.env['HTTP_X_GITHUB_EVENT']
     when "pull_request"
@@ -23,7 +24,8 @@ case request.env['HTTP_X_GITHUB_EVENT']
         end
 
         if @payload["action"] == "closed"
-            @branch
+            content_type :json
+            { :branch => @branch, :response => 'Closed'}.to_json
         end
 
     end
@@ -36,6 +38,11 @@ def process_pull_request(pull_request)
 
     sleep 2 # do work...
 
-    @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
-    puts "Pull request processed!"
+    if @answer
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success')
+        puts "Pull request processed!"
+    else
+        @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'failure')
+        puts "Pull requst failed "
+    end
 end
