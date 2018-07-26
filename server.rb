@@ -39,29 +39,29 @@ def process_pull_request(pull_request)
     # Sycamore School Repo
     # Retreive branch to test
     puts "Update School and get branch"
-    puts updateSchool = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchool; git fetch; git pull; git checkout #{@branch}").success?
+    puts updateSchool = Shell.execute("cd ~/Development/SycamoreSchool; git fetch; git pull; git checkout #{@branch}").success?
 
     #Sycamore School Rails Repo
     # Update repo to master
     puts "Update Rails Repo"
-    puts updateRails = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; git fetch; git pull; git checkout master").success?
+    puts updateRails = Shell.execute("cd ~/Development/SycamoreSchoolRails; git fetch; git pull; git checkout master").success?
     # Update Docker Container
     puts "Update web container"
-    puts updateContainer = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolRails; docker-compose build web").success?
+    puts updateContainer = Shell.execute("cd ~/Development/SycamoreSchoolRails; docker-compose build web").success?
 
     # Sycamore School Tests repo
     # Update repo to master
     puts "Update Tests Repo"
-    puts updateTests = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; git fetch; git pull; git checkout master").success?
+    puts updateTests = Shell.execute("cd ~/Development/SycamoreSchoolTests; git fetch; git pull; git checkout master").success?
     # Install dependencies
     puts "Install dependencies"
-    puts installDependencies = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; npm install").success?    
+    puts installDependencies = Shell.execute("cd ~/Development/SycamoreSchoolTests; npm install").success?    
     # Start nightwatch tests
     
     if updateSchool && updateRails && updateContainer && updateTests && installDependencies
 
         puts "Fire Nightwatch!"
-        puts nightwatch = Shell.execute("cd ~; cd /Volumes/Development/SycamoreSchoolTests; nightwatch --retries 5").success?
+        puts nightwatch = Shell.execute("cd ~/Development/SycamoreSchoolTests; nightwatch --retries 5").success?
 
         if nightwatch
             @client.create_status(pull_request['base']['repo']['full_name'], pull_request['head']['sha'], 'success', { :description => 'Nightwatch tests passed!' })
